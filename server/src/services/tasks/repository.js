@@ -6,23 +6,12 @@ let Tasks = [
 ];
 
 const TaskRepository = {
-    // init: function () {
-    //     getRedisClient().set('Meeting1', {name: "Meeting1", description: "meeting for scale"});
-    //     getRedisClient().set('Meeting1', {name: "Meeting1", description: "meeting for scale"});
-    // },
-
     getRedisClient: function() {
         return redis.getClient();
     },
     getTasks: async function ()  {
-        const keys = await this.getRedisClient().sendCommand(["keys","*"]);
-        console.log(keys);
-        let tasks = [];
-        for(let i = 0; i < keys.length; i++) {
-            tasks.push(JSON.parse(await this.getRedisClient().get(keys[i])));
-        }
-
-        return tasks;
+        const res = await this.getRedisClient().hVals(`task`);
+        return res.map(task => JSON.parse(task));
     },
 
     getTask: async function(name)  {
@@ -30,7 +19,7 @@ const TaskRepository = {
     },
 
     saveTask: async function (task) {
-        this.getRedisClient().set(task.name, JSON.stringify(task));
+        this.getRedisClient().hSet(`task`, task.name, task);
         return task;
         // Tasks.push(task);
     }
